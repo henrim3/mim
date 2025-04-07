@@ -13,17 +13,20 @@ int main(int argc, char* argv[]) {
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fprintf(stderr, "ERROR: Couldn't initialize SDL: %s\n", SDL_GetError());
+        return 1;
     }
 
     if (SDL_CreateWindowAndRenderer("mim", SCREEN_WIDTH, SCREEN_HEIGHT, 0,
                                     &window, &renderer) < 0) {
         fprintf(stderr, "ERROR: Couldn't create SDL window and renderer: %s\n",
                 SDL_GetError());
+        return 1;
     }
 
     if (SDL_ShowWindow(window) < 0) {
         fprintf(stderr, "ERROR: Couldn't show SDL window: %s\n",
                 SDL_GetError());
+        return 1;
     }
 
     SDL_FRect rect = {.x = 5, .y = 5, .w = 5, .h = 5};
