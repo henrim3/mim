@@ -3,9 +3,6 @@ project(mim)
 
 set(SDL_VERSION 3.2.10)
 
-# create mim target
-add_executable(mim WIN32 src/main.c)
-
 include(FetchContent)
 
 # get SDL3
@@ -15,5 +12,25 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL3)
 
+# include_directories(mim ${SDL3_INCLUDE_DIRS})
+
+# create mim target
+if(WIN32)
+    add_executable(mim WIN32 src/main.c)
+else()
+    add_executable(mim src/main.c)
+endif()
+
 # link SDL3
 target_link_libraries(mim PRIVATE SDL3::SDL3)
+
+# copy dll to build/ if Windows
+if(WIN32)
+  add_custom_command(
+    TARGET mim POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+      "$<TARGET_FILE:SDL3::SDL3>"
+      "$<TARGET_FILE_DIR:mim>"
+    VERBATIM
+  )
+endif()
