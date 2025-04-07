@@ -12,8 +12,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL3)
 
-# include_directories(mim ${SDL3_INCLUDE_DIRS})
-
 # create mim target
 add_executable(mim src/main.c)
 # if(WIN32)
