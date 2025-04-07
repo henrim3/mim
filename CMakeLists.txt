@@ -15,11 +15,12 @@ FetchContent_MakeAvailable(SDL3)
 # include_directories(mim ${SDL3_INCLUDE_DIRS})
 
 # create mim target
-if(WIN32)
-    add_executable(mim WIN32 src/main.c)
-else()
-    add_executable(mim src/main.c)
-endif()
+add_executable(mim src/main.c)
+# if(WIN32)
+#     add_executable(mim WIN32 src/main.c)
+# else()
+#     add_executable(mim src/main.c)
+# endif()
 
 # link SDL3
 target_link_libraries(mim PRIVATE SDL3::SDL3)

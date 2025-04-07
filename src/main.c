@@ -19,19 +19,28 @@ void* scp(void* ptr) {
 }
 
 int main(int argc, char* argv[]) {
-    printf("Started mim!");
+    printf("Started mim!\n");
+
+    SDL_Window* window = NULL;
+    SDL_Surface* screenSurface = NULL;
+    SDL_Event event;
 
     scc(SDL_Init(SDL_INIT_VIDEO));
 
-    SDL_Window* window =
-        scp(SDL_CreateWindow("mim", SCREEN_WIDTH, SCREEN_HEIGHT, 0));
+    window = scp(SDL_CreateWindow("mim", SCREEN_WIDTH, SCREEN_HEIGHT, 0));
 
     scc(SDL_ShowWindow(window));
 
-    SDL_Surface* screenSurface = SDL_GetWindowSurface(window);
+    screenSurface = SDL_GetWindowSurface(window);
+
+    // Main loop
+    while (1) {
+        if (SDL_PollEvent(&event) && event.type == SDL_EVENT_QUIT) break;
+    }
+
+    printf("Closing :(\n");
 
     SDL_UpdateWindowSurface(window);
-    SDL_Delay(2000);
     SDL_DestroyWindow(window);
     SDL_Quit();
 
