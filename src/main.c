@@ -18,13 +18,22 @@ void* scp(void* ptr) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     printf("Started mim!");
+
+    scc(SDL_Init(SDL_INIT_VIDEO));
 
     SDL_Window* window =
         scp(SDL_CreateWindow("mim", SCREEN_WIDTH, SCREEN_HEIGHT, 0));
 
-    SDL_ShowWindow(window);
+    scc(SDL_ShowWindow(window));
+
+    SDL_Surface* screenSurface = SDL_GetWindowSurface(window);
+
+    SDL_UpdateWindowSurface(window);
+    SDL_Delay(2000);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 
     return 0;
 }
