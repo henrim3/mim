@@ -31,19 +31,20 @@ int main(int argc, char* argv[]) {
 
     SDL_FRect rect = {.x = 5, .y = 5, .w = 5, .h = 5};
 
-    SDL_Event event;
-    while (1) {
-        if (SDL_PollEvent(&event) && event.type == SDL_EVENT_QUIT) {
-            break;
+    bool running = true;
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_EVENT_QUIT:
+                    running = false;
+                    break;
+            }
+
+            if (!running) {
+                break;
+            }
         }
-
-        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
-        SDL_RenderClear(renderer);
-
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-        SDL_RenderRect(renderer, &rect);
-
-        SDL_RenderPresent(renderer);
     }
 
     printf("Closing :(\n");
