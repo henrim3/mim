@@ -39,6 +39,16 @@ int main(int argc, char* argv[]) {
                 case SDL_EVENT_QUIT:
                     running = false;
                     break;
+
+                case SDL_EVENT_KEY_DOWN:
+                    printf("key pressed: %d\n", event.key.key);
+                    break;
+
+                case SDL_EVENT_KEY_UP:
+                    printf("key released: %d\n", event.key.key);
+                    break;
+
+                default:
             }
 
             if (!running) {
