@@ -4,22 +4,6 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-void scc(int code) {
-    if (!code) {
-        fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
-        exit(1);
-    }
-}
-
-void* scp(void* ptr) {
-    if (ptr == NULL) {
-        fprintf(stderr, "SDL ERROR: %s\n", SDL_GetError());
-        exit(1);
-    }
-}
-
-void drawThing() {}
-
 int main(int argc, char* argv[]) {
     printf("Started mim!\n");
 
@@ -27,12 +11,20 @@ int main(int argc, char* argv[]) {
     SDL_Renderer* renderer = NULL;
     SDL_Surface* screenSurface = NULL;
 
-    scc(SDL_Init(SDL_INIT_VIDEO));
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        fprintf(stderr, "ERROR: Couldn't initialize SDL: %s\n", SDL_GetError());
+    }
 
-    scc(SDL_CreateWindowAndRenderer("mim", SCREEN_WIDTH, SCREEN_HEIGHT, 0,
-                                    &window, &renderer));
+    if (SDL_CreateWindowAndRenderer("mim", SCREEN_WIDTH, SCREEN_HEIGHT, 0,
+                                    &window, &renderer) < 0) {
+        fprintf(stderr, "ERROR: Couldn't create SDL window and renderer: %s\n",
+                SDL_GetError());
+    }
 
-    scc(SDL_ShowWindow(window));
+    if (SDL_ShowWindow(window) < 0) {
+        fprintf(stderr, "ERROR: Couldn't show SDL window: %s\n",
+                SDL_GetError());
+    }
 
     SDL_FRect rect = {.x = 5, .y = 5, .w = 5, .h = 5};
 
