@@ -4,7 +4,7 @@
       "name": "Win32",
       "includePath": [
         "${workspaceFolder}/**",
-        "${workspaceFolder}/build/_deps/sdl3-src/include"
+        "${workspaceFolder}/build/_deps/sdl3-src/include/SDL3"
       ],
       "defines": ["_DEBUG", "UNICODE", "_UNICODE"],
       "windowsSdkVersion": "10.0.19041.0",
