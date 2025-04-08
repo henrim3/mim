@@ -20,8 +20,9 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (SDL_CreateWindowAndRenderer("mim", SCREEN_WIDTH, SCREEN_HEIGHT, 0,
-                                    &window, &renderer) < 0) {
+    if (SDL_CreateWindowAndRenderer("mim", SCREEN_WIDTH, SCREEN_HEIGHT,
+                                    SDL_WINDOW_RESIZABLE, &window,
+                                    &renderer) < 0) {
         fprintf(stderr, "ERROR: Couldn't create SDL window and renderer: %s\n",
                 SDL_GetError());
         return 1;
@@ -32,6 +33,16 @@ int main(int argc, char* argv[]) {
                 SDL_GetError());
         return 1;
     }
+
+    SDL_Surface* image = SDL_LoadBMP("../fonts/round_6x6.bmp");
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, image);
+
+    SDL_FRect image_rect = {
+        .x = 0,
+        .y = 0,
+        .w = image->w,
+        .h = image->h,
+    };
 
     bool quit = false;
     while (!quit) {
@@ -53,9 +64,15 @@ int main(int argc, char* argv[]) {
                 break;
             }
         }
+
+        SDL_RenderTexture(renderer, texture, &image_rect, &image_rect);
+        SDL_RenderPresent(renderer);
     }
 
     printf("Closing :(\n");
+
+    SDL_DestroyTexture(texture);
+    SDL_DestroySurface(image);
 
     SDL_DestroyWindow(window);
     SDL_DestroyRenderer(renderer);
