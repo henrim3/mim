@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 project(mim)
 
 set(SDL_VERSION 3.2.10)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 
