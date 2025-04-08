@@ -4,6 +4,10 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
+void handle_key_down(SDL_KeyboardEvent keyboard_event) {
+    printf("%c was pressed\n", keyboard_event.key);
+}
+
 int main(int argc, char* argv[]) {
     printf("Started mim!\n");
 
@@ -29,29 +33,23 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    SDL_FRect rect = {.x = 5, .y = 5, .w = 5, .h = 5};
-
-    bool running = true;
-    while (running) {
+    bool quit = false;
+    while (!quit) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_EVENT_QUIT:
-                    running = false;
+                    quit = true;
                     break;
 
                 case SDL_EVENT_KEY_DOWN:
-                    printf("key pressed: %d\n", event.key.key);
-                    break;
-
-                case SDL_EVENT_KEY_UP:
-                    printf("key released: %d\n", event.key.key);
+                    handle_key_down(event.key);
                     break;
 
                 default:
             }
 
-            if (!running) {
+            if (quit) {
                 break;
             }
         }
