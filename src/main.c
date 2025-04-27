@@ -1,11 +1,17 @@
 #include <SDL3/SDL.h>
 #include <stdio.h>
 
+#include "editor.h"
+
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
 void handle_key_down(SDL_KeyboardEvent keyboard_event) {
     printf("%c was pressed\n", keyboard_event.key);
+
+    if (keyboard_event.key == SDLK_O) {
+        open_file("help.txt");
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -20,9 +26,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    SDL_WindowFlags windowFlags = SDL_WINDOW_RESIZABLE;
+
     if (SDL_CreateWindowAndRenderer("mim", SCREEN_WIDTH, SCREEN_HEIGHT,
-                                    SDL_WINDOW_RESIZABLE, &window,
-                                    &renderer) < 0) {
+                                    windowFlags, &window, &renderer) < 0) {
         fprintf(stderr, "ERROR: Couldn't create SDL window and renderer: %s\n",
                 SDL_GetError());
         return 1;
