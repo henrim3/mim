@@ -1,0 +1,12 @@
+next step:
+load file into memory
+
+todo:
+- display characters
+- display text from buffer
+- modify buffer from input
+- cursor navigation
+
+Editor
+  Buffer
+    Cursor
