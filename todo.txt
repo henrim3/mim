@@ -7,6 +7,12 @@ todo:
 - modify buffer from input
 - cursor navigation
 
-Editor
-  Buffer
-    Cursor
+editor struct
+- filename
+- file pointer
+- text buffer
+- cursor x
+- cursor y
+- mode?
+
+load file

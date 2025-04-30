@@ -14,7 +14,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(SDL3)
 
 # create mim target
-add_executable(mim src/main.c src/editor.c src/buffer.c)
+add_executable(mim src/main.c src/editor.c src/piece_table.c)
 # if(WIN32)
 #     add_executable(mim WIN32 src/main.c)
 # else()
