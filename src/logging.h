@@ -30,12 +30,12 @@
   do {                                                                         \
     printf( "%s%s:%s:%s ERROR: %s%s\n", RED, __FILE__, TOSTRING( __LINE__ ),   \
             BOLDRED, RESET, msg );                                             \
-  } while (0)
+  } while ( 0 )
 
 #define LOG_PERROR( msg )                                                      \
   do {                                                                         \
     fprintf( stderr, "ERROR at %s:%s: ", __FILE__, TOSTRING( __LINE__ ) );     \
     perror( msg );                                                             \
-  } while (0)
+  } while ( 0 )
 
 #endif // __MIM_LOGGING_H__

@@ -1,10 +1,12 @@
-{
-  IndentWidth: 2,
-  AccessModifierOffset: -4,
-  AllowShortFunctionsOnASingleLine: Empty,
-  AllowShortIfStatementsOnASingleLine: false,
-  AllowShortLoopsOnASingleLine: false,
-  SpacesInParens: Custom,
-  SpacesInParensOptions: { Other: true },
-  PointerAlignment: Middle,
-}
+IndentWidth: 2
+AccessModifierOffset: -4
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+SpacesInParens: Custom
+SpacesInParensOptions:
+  InConditionalStatements: true
+  Other: true
+
+PointerAlignment: Left

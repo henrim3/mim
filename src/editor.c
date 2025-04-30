@@ -2,4 +2,4 @@
 
 #include <stdio.h>
 
-void Editor_load_file( Editor * editor, char * file_name ) {}
+void Editor_load_file( Editor* editor, char* file_name ) {}
