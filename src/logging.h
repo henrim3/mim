@@ -28,7 +28,7 @@
 
 #define LOG_MESSAGE( msg, ... )                                                \
   do {                                                                         \
-    printf( "%s:%d: ", __FILE__, __LINE__ );                                   \
+    printf( "%s%s:%d:%s ", YELLOW, __FILE__, __LINE__, COLOR_RESET );          \
     printf( msg, ##__VA_ARGS__ );                                              \
     printf( "\n" );                                                            \
   } while ( 0 )
