@@ -1,7 +1,7 @@
 #ifndef __MIM_LOGGING_H__
 #define __MIM_LOGGING_H__
 
-#define RESET "\033[0m"
+#define COLOR_RESET "\033[0m"
 #define BLACK "\033[30m"
 #define RED "\033[31m"
 #define GREEN "\033[32m"
@@ -26,15 +26,24 @@
 
 #include <stdio.h>
 
-#define LOG_ERROR( msg )                                                       \
+#define LOG_MESSAGE( msg, ... )                                                \
   do {                                                                         \
-    printf( "%s%s:%s:%s ERROR: %s%s\n", RED, __FILE__, TOSTRING( __LINE__ ),   \
-            BOLDRED, RESET, msg );                                             \
+    printf( "%s:%d: ", __FILE__, __LINE__ );                                   \
+    printf( msg, ##__VA_ARGS__ );                                              \
+    printf( "\n" );                                                            \
+  } while ( 0 )
+
+#define LOG_ERROR( msg, ... )                                                  \
+  do {                                                                         \
+    printf( "%s%s:%d:%s ERROR: %s", RED, __FILE__, __LINE__, BOLDRED,          \
+            COLOR_RESET );                                                     \
+    printf( msg, ##__VA_ARGS__ );                                              \
+    printf( "\n" );                                                            \
   } while ( 0 )
 
 #define LOG_PERROR( msg )                                                      \
   do {                                                                         \
-    fprintf( stderr, "ERROR at %s:%s: ", __FILE__, TOSTRING( __LINE__ ) );     \
+    fprintf( stderr, "%s%s:%d:%s ", RED, __FILE__, __LINE__, COLOR_RESET );    \
     perror( msg );                                                             \
   } while ( 0 )
 
