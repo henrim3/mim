@@ -19,23 +19,23 @@
 #define BOLDCYAN "\033[1m\033[36m"
 #define BOLDWHITE "\033[1m\033[37m"
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+#define STRINGIFY( x ) #x
+#define TOSTRING( x ) STRINGIFY( x )
 
-#define LOCATION_STR BOLDYELLOW __FILE__ ":" TOSTRING(__LINE__) ": " RESET
+#define LOCATION_STR BOLDYELLOW __FILE__ ":" TOSTRING( __LINE__ ) ": " RESET
 
 #include <stdio.h>
 
-#define LOG_ERROR(msg)                                                        \
-    do {                                                                      \
-        printf("%s%s:%s:%s ERROR: %s%s\n", RED, __FILE__, TOSTRING(__LINE__), \
-               BOLDRED, RESET, msg);                                          \
-    } while (0)
+#define LOG_ERROR( msg )                                                       \
+  do {                                                                         \
+    printf( "%s%s:%s:%s ERROR: %s%s\n", RED, __FILE__, TOSTRING( __LINE__ ),   \
+            BOLDRED, RESET, msg );                                             \
+  } while (0)
 
-#define LOG_PERROR(msg)                                                    \
-    do {                                                                   \
-        fprintf(stderr, "ERROR at %s:%s: ", __FILE__, TOSTRING(__LINE__)); \
-        perror(msg);                                                       \
-    } while (0)
+#define LOG_PERROR( msg )                                                      \
+  do {                                                                         \
+    fprintf( stderr, "ERROR at %s:%s: ", __FILE__, TOSTRING( __LINE__ ) );     \
+    perror( msg );                                                             \
+  } while (0)
 
-#endif  // __MIM_LOGGING_H__
+#endif // __MIM_LOGGING_H__

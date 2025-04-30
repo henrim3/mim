@@ -6,14 +6,15 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-void handle_key_down(SDL_KeyboardEvent keyboard_event) {
-    printf("%c was pressed\n", keyboard_event.key);
+void handle_key_down( SDL_KeyboardEvent keyboard_event ) {
+  printf( "%c was pressed\n", keyboard_event.key );
 }
 
 int main() {
-    PieceTable pt = {0};
-    piece_table_load_file(&pt, "test.txt");
-    return 0;
+  PieceTable pt = { 0 };
+  PieceTable_load_file( &pt, "test.txt" );
+  PieceTable_output( &pt );
+  return 0;
 }
 
 // int main(int argc, char* argv[]) {

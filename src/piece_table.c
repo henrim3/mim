@@ -8,54 +8,84 @@
 
 #define READ_CHUNK_SIZE 64
 
-int piece_table_load_file(PieceTable *pt, char *filename) {
-    // open file
-    FILE *f = fopen(filename, "r");
-    if (f == NULL) {
-        LOG_PERROR("fopen() error while opening file");
-        return -1;
-    }
+int PieceTable_load_file( PieceTable * pt, char * filename ) {
+  // open file
+  FILE * f = fopen( filename, "r" );
+  if (f == NULL) {
+    LOG_PERROR( "fopen() error while opening file" );
+    return -1;
+  }
 
-    // get file size
-    if (fseek(f, 0L, SEEK_END) == -1) {
-        LOG_PERROR("fseek() error while getting file length");
-        return -1;
-    }
-    long file_length = ftell(f);
+  // get file size
+  if (fseek( f, 0L, SEEK_END ) == -1) {
+    LOG_PERROR( "fseek() error while getting file length" );
+    return -1;
+  }
+  long file_length = ftell( f );
 
-    pt->original_buffer = malloc(file_length * sizeof(char) + 1);
+  pt->original_buffer = malloc( file_length * sizeof( char ) + 1 );
 
-    if (pt->original_buffer == NULL) {
-        LOG_PERROR("malloc() error while loading file");
-        return -1;
-    }
+  if (pt->original_buffer == NULL) {
+    LOG_PERROR( "malloc() error while loading file" );
+    return -1;
+  }
 
-    pt->original_buffer_size = file_length;
-    pt->original_buffer[file_length] = '\0';
+  pt->original_buffer_size = file_length;
+  pt->original_buffer[file_length] = '\0';
 
-    // back to beginning to read
-    rewind(f);
-    fread(pt->original_buffer, sizeof(char), file_length, f);
+  // back to beginning to read
+  rewind( f );
+  fread( pt->original_buffer, sizeof( char ), file_length, f );
 
-    if (fclose(f) == EOF) {
-        LOG_PERROR("fclose() error");
-        return -1;
-    }
+  if (fclose( f ) == EOF) {
+    LOG_PERROR( "fclose() error" );
+    return -1;
+  }
 
-    assert(pt->pieces_head == NULL && "pieces should be empty on load");
+  assert( pt->pieces_head == NULL && "pieces should be empty on load" );
 
-    // create pieces head
-    pt->pieces_head = calloc(1, sizeof(Piece));
-    if (pt->pieces_head == NULL) {
-        LOG_PERROR("calloc() error while allocating first piece");
-    }
+  // create pieces head
+  pt->pieces_head = calloc( 1, sizeof( PT_Piece ) );
+  if (pt->pieces_head == NULL) {
+    LOG_PERROR( "calloc() error while allocating first piece" );
+  }
 
-    Piece *head = pt->pieces_head;
-    head->start = 0;
-    head->length = file_length;
-    head->source = PT_ORIGINAL_BUFFER;
+  PT_Piece * head = pt->pieces_head;
+  head->start = 0;
+  head->length = file_length;
+  head->source = PT_ORIGINAL_BUFFER;
 
-    pt->pieces_length = 1;
+  pt->pieces_length = 1;
 
-    return 0;
+  return 0;
 }
+
+int PieceTable_output( PieceTable * pt ) {
+  PT_Piece * curr = pt->pieces_head;
+
+  if (curr == NULL) {
+    LOG_ERROR( "pieces head is null" );
+    return -1;
+  }
+
+  while (curr != 0) {
+    char * buf;
+
+    if (curr->source == PT_ORIGINAL_BUFFER) {
+      buf = pt->original_buffer;
+    } else if (curr->source == PT_ADD_BUFFER) {
+      buf = pt->add_buffer;
+    } else {
+      LOG_ERROR( "current piece has invalid source" );
+      return -1;
+    }
+
+    printf( % s );
+
+    curr = curr->next;
+  }
+
+  printf( "\n" );
+}
+
+int PieceTable_read_piece( PieceTable * pt, Piece * p, char * buf ) {}
