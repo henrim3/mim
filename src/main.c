@@ -14,6 +14,7 @@ int main() {
   PieceTable pt = { 0 };
   PieceTable_load_file( &pt, "test.txt" );
   PieceTable_output( &pt );
+  PieceTable_free( &pt );
   return 0;
 }
 

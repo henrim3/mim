@@ -23,9 +23,9 @@ typedef struct {
   int pieces_length;
 } PieceTable;
 
+void PieceTable_free( PieceTable* pt );
 int PieceTable_load_file( PieceTable* pt, char* filename );
 int PieceTable_output( PieceTable* pt );
 int PieceTable_read_piece( PieceTable* pt, PT_Piece* p, char* buf );
-void PieceTable_free( PieceTable* pt );
 
 #endif //  __PIECE_TABLE_H__

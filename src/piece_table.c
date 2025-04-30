@@ -10,6 +10,19 @@
 
 #define READ_CHUNK_SIZE 64
 
+void PieceTable_free( PieceTable* pt ) {
+  free( pt->original_buffer );
+  free( pt->add_buffer );
+
+  PT_Piece* curr = pt->pieces_head;
+
+  while ( curr != NULL ) {
+    PT_Piece* next = curr->next;
+    free( curr );
+    curr = next;
+  }
+}
+
 int PieceTable_load_file( PieceTable* pt, char* filename ) {
   // open file
   FILE* f = fopen( filename, "r" );
@@ -71,10 +84,17 @@ int PieceTable_output( PieceTable* pt ) {
   }
 
   while ( curr != 0 ) {
-    char* buf = malloc( sizeof( char ) );
+    char* buf = malloc( curr->length * sizeof( char ) );
     if ( buf == NULL ) {
       LOG_PERROR( "malloc()" );
     }
+
+    if ( PieceTable_read_piece( pt, curr, buf ) == MIM_FAILURE ) {
+      return MIM_FAILURE;
+    }
+    printf( "%s", buf );
+
+    free( buf );
 
     curr = curr->next;
   }
