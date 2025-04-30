@@ -20,6 +20,7 @@ typedef struct PieceTable {
     long original_buffer_size;
     long add_buffer_size;
     Piece *pieces_head;
+    int pieces_length;
 } PieceTable;
 
 int piece_table_load_file(PieceTable *pt, char *filename);

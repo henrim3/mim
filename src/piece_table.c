@@ -44,15 +44,18 @@ int piece_table_load_file(PieceTable *pt, char *filename) {
 
     assert(pt->pieces_head == NULL && "pieces should be empty on load");
 
+    // create pieces head
     pt->pieces_head = calloc(1, sizeof(Piece));
     if (pt->pieces_head == NULL) {
-        LOG_PERROR("calloc() error while allocating piece head");
+        LOG_PERROR("calloc() error while allocating first piece");
     }
 
     Piece *head = pt->pieces_head;
     head->start = 0;
     head->length = file_length;
     head->source = PT_ORIGINAL_BUFFER;
+
+    pt->pieces_length = 1;
 
     return 0;
 }
