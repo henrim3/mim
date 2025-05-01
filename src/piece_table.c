@@ -360,8 +360,17 @@ void PieceTable_dump_piece( PieceTable* pt, PT_Piece* p ) {
     printf( "  text: invalid\n" );
   }
   free( buf );
-  printf( "  prev: %p\n", p->prev );
-  printf( "  next: %p\n", p->next );
+  if ( p->prev == NULL ) {
+    printf( "  prev: NULL\n" );
+  } else {
+    printf( "  prev: %p\n", p->prev );
+  }
+
+  if ( p->next == NULL ) {
+    printf( "  next: NULL\n" );
+  } else {
+    printf( "  next: %p\n", p->next );
+  }
 }
 
 void PieceTable_dump_pieces( PieceTable* pt ) {
