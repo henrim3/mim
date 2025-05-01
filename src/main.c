@@ -15,7 +15,7 @@ int main() {
   PieceTable pt = { 0 };
   PieceTable_load_file( &pt, "test.txt" );
   // PieceTable_output_final( &pt );
-  PieceTable_insert( &pt, 2, "3" );
+  PieceTable_insert( &pt, 4, "B" );
   PieceTable_dump_pieces( &pt );
   PieceTable_output_final( &pt );
   PieceTable_free( &pt );

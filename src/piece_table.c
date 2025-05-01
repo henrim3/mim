@@ -154,6 +154,10 @@ int PieceTable_insert( PieceTable* pt, int64_t pos, char* src ) {
     return MIM_SUCCESS;
   }
 
+  // TODO: put as head if pos 0
+  if ( pos == 0 ) {
+  }
+
   // put as tail if goes after current tail
   if ( pos == pt->total_length ) {
     assert( pt->pieces_tail != NULL && "pieces tail should be null" );
