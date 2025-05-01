@@ -115,7 +115,6 @@ int PieceTable_insert( PieceTable* pt, int64_t global_pos, char* text ) {
     pt->pieces_head = new_piece;
     pt->pieces_tail = new_piece;
 
-    new_piece->buf_pos = 0;
     new_piece->next = NULL;
     new_piece->prev = NULL;
 
@@ -148,7 +147,6 @@ int PieceTable_insert( PieceTable* pt, int64_t global_pos, char* text ) {
   // put as tail if goes after current tail
   if ( global_pos == pt->total_length ) {
     assert( pt->pieces_tail != NULL && "pieces tail should be null" );
-    new_piece->buf_pos = pt->add_buffer_length;
     pt->pieces_tail->next = new_piece;
     new_piece->prev = pt->pieces_tail;
     pt->pieces_tail = new_piece;
@@ -232,6 +230,7 @@ int64_t PieceTable_append_to_add_buffer( PieceTable* pt, char* src,
                                          size_t src_len ) {
   // grow add buffer if necessary
   int64_t new_length = pt->add_buffer_length + src_len;
+  int64_t old_length = pt->add_buffer_length;
 
   if ( pt->add_buffer_size == 0 ) {
     assert( pt->add_buffer_length == 0 &&
@@ -263,7 +262,6 @@ int64_t PieceTable_append_to_add_buffer( PieceTable* pt, char* src,
   assert( pt->add_buffer[new_length] == '\0' &&
           "strcpy should put null terminator" );
 
-  int64_t old_length = pt->add_buffer_length;
   pt->add_buffer_length = new_length;
 
   return old_length;
