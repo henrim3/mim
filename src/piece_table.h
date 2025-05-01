@@ -30,7 +30,7 @@ typedef struct {
 } PieceTable;
 
 void PieceTable_free( PieceTable* pt );
-int PieceTable_load_file( PieceTable* pt, char* filename );
+int PieceTable_load_file( PieceTable* pt, char* file_name );
 int PieceTable_insert( PieceTable* pt, char* text, int64_t global_pos );
 //
 // returns position in add buffer, -1 if error

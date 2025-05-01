@@ -25,9 +25,9 @@ void PieceTable_free( PieceTable* pt ) {
   }
 }
 
-int PieceTable_load_file( PieceTable* pt, char* filename ) {
+int PieceTable_load_file( PieceTable* pt, char* file_name ) {
   // open file
-  FILE* f = fopen( filename, "r" );
+  FILE* f = fopen( file_name, "r" );
   if ( f == NULL ) {
     LOG_PERROR( "fopen() error while opening file" );
     return MIM_FAILURE;
@@ -94,6 +94,10 @@ int PieceTable_insert( PieceTable* pt, char* text, int64_t global_pos ) {
   }
 
   size_t src_len = strlen( text );
+
+  if ( src_len == 0 ) {
+    return MIM_SUCCESS;
+  }
 
   PT_Piece* new_piece = malloc( sizeof( PT_Piece ) );
   if ( new_piece == NULL ) {
