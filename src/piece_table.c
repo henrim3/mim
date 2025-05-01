@@ -193,9 +193,11 @@ int PieceTable_insert( PieceTable* pt, int64_t pos, char* src ) {
 
   new_piece->next = second_half_piece;
 
-  // TODO: this length stuff is wrong + missing length for second half
-  insert_piece->length = pos - insert_piece->buf_pos;
-  second_half_piece->buf_pos = pos + src_len;
+  int64_t original_insert_piece_length = insert_piece->length;
+  insert_piece->length = pos - insert_piece->global_pos;
+  second_half_piece->buf_pos = insert_piece->buf_pos + insert_piece->length;
+  second_half_piece->length =
+      original_insert_piece_length - insert_piece->length;
 
   if ( pt->pieces_tail == insert_piece ) {
     pt->pieces_tail = second_half_piece;
