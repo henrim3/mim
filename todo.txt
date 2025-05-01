@@ -1,18 +1,1 @@
-next step:
-load file into memory
-
-todo:
-- display characters
-- display text from buffer
-- modify buffer from input
-- cursor navigation
-
-editor struct
-- filename
-- file pointer
-- text buffer
-- cursor x
-- cursor y
-- mode?
-
-load file
+distinguishing between global_pos and buf_pos, not sure if fully added everywhere

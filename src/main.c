@@ -1,6 +1,7 @@
 #include <SDL3/SDL.h>
 #include <stdio.h>
 
+#include "logging.h"
 #include "piece_table.h"
 
 #define SCREEN_WIDTH 640
@@ -13,7 +14,11 @@ void handle_key_down( SDL_KeyboardEvent keyboard_event ) {
 int main() {
   PieceTable pt = { 0 };
   PieceTable_load_file( &pt, "test.txt" );
-  PieceTable_output( &pt );
+  // PieceTable_output( &pt );
+  PieceTable_insert( &pt, 5, "blah" );
+  PieceTable_insert( &pt, 5, "AAA" );
+  PieceTable_output_pieces( &pt );
+  // PieceTable_output( &pt );
   PieceTable_free( &pt );
   return 0;
 }
