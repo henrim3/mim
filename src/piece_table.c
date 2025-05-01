@@ -83,7 +83,7 @@ int PieceTable_load_file( PieceTable* pt, char* filename ) {
   return MIM_SUCCESS;
 }
 
-int PieceTable_insert( PieceTable* pt, int64_t global_pos, char* text ) {
+int PieceTable_insert( PieceTable* pt, char* text, int64_t global_pos ) {
   LOG_MESSAGE( "inserting %s at %d", text, global_pos );
 
   // check valid position

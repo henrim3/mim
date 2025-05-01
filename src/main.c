@@ -14,7 +14,9 @@ void handle_key_down( SDL_KeyboardEvent keyboard_event ) {
 int main() {
   PieceTable pt = { 0 };
   PieceTable_load_file( &pt, "test.txt" );
-  PieceTable_insert( &pt, 11, "MIDDLE" );
+  PieceTable_insert( &pt, "MIDDLE", 6 );
+  PieceTable_insert( &pt, "END", 17 );
+  PieceTable_insert( &pt, "START", 0 );
   PieceTable_dump_pieces( &pt );
   PieceTable_output_final( &pt );
   PieceTable_free( &pt );
