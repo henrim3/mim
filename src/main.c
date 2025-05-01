@@ -14,11 +14,11 @@ void handle_key_down( SDL_KeyboardEvent keyboard_event ) {
 int main() {
   PieceTable pt = { 0 };
   PieceTable_load_file( &pt, "test.txt" );
-  // PieceTable_output( &pt );
+  // PieceTable_output_final( &pt );
   PieceTable_insert( &pt, 5, "blah" );
   PieceTable_insert( &pt, 5, "AAA" );
-  PieceTable_output_pieces( &pt );
-  // PieceTable_output( &pt );
+  PieceTable_dump_pieces( &pt );
+  // PieceTable_output_final( &pt );
   PieceTable_free( &pt );
   return 0;
 }

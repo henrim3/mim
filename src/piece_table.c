@@ -183,9 +183,10 @@ int PieceTable_insert( PieceTable* pt, int64_t pos, char* src ) {
     return MIM_FAILURE;
   }
 
-  // insert
+  // split into two pieces and insert between
   second_half_piece->src_buf = insert_piece->src_buf;
   second_half_piece->prev = new_piece;
+  second_half_piece->next = insert_piece->next;
 
   new_piece->prev = insert_piece;
   insert_piece->next = new_piece;
@@ -205,7 +206,7 @@ int PieceTable_insert( PieceTable* pt, int64_t pos, char* src ) {
   pt->add_buffer_length = new_length;
 }
 
-int PieceTable_output( PieceTable* pt ) {
+int PieceTable_output_final( PieceTable* pt ) {
   PT_Piece* curr = pt->pieces_head;
 
   if ( curr == NULL ) {
@@ -277,17 +278,17 @@ PT_Piece* PieceTable_find_piece_by_global_pos( PieceTable* pt, int64_t pos ) {
   return curr;
 }
 
-void PieceTable_output_pieces( PieceTable* pt ) {
+void PieceTable_dump_pieces( PieceTable* pt ) {
   PT_Piece* curr = pt->pieces_head;
 
   while ( curr != NULL ) {
-    PT_Piece_output( curr );
+    PT_Piece_dump( curr );
     printf( "\n" );
     curr = curr->next;
   }
 }
 
-void PT_Piece_output( PT_Piece* p ) {
+void PT_Piece_dump( PT_Piece* p ) {
   printf( "Piece at %p:\n", p );
   printf( "  global_pos: %" PRId64 "\n", p->global_pos );
   printf( "  buf_pos: %" PRId64 "\n", p->buf_pos );
