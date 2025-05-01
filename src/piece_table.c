@@ -12,6 +12,10 @@
 
 #define INITIAL_ADD_BUFFER_SIZE 256
 
+int PieceTable_init( PieceTable* pt ) {
+  memset( pt, 0, sizeof( PieceTable ) );
+}
+
 void PieceTable_free( PieceTable* pt ) {
   free( pt->original_buffer );
   free( pt->add_buffer );
@@ -25,7 +29,7 @@ void PieceTable_free( PieceTable* pt ) {
   }
 }
 
-int PieceTable_load_file( PieceTable* pt, char* file_name ) {
+int PieceTable_load_file( PieceTable* pt, const char* file_name ) {
   // open file
   FILE* f = fopen( file_name, "r" );
   if ( f == NULL ) {

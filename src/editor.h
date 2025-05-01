@@ -2,16 +2,16 @@
 #define __MIM_EDITOR_H__
 
 #include "piece_table.h"
+#include <SDL3/SDL.h>
 #include <stdio.h>
 
 typedef struct {
-  char* file_name;
-  FILE* file_ptr;
+  SDL_Window* window;
   PieceTable* piece_table;
-  int cursor_x;
-  int cursor_y;
 } Editor;
 
-int Editor_load_file( Editor* editor, char* file_name );
+int Editor_init( Editor* editor, SDL_Window* window );
+void Editor_free( Editor* editor );
+void Editor_open_file_picker( Editor* editor );
 
 #endif // __MIM_EDITOR_H__

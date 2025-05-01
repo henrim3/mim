@@ -19,6 +19,7 @@
 #define BOLDCYAN "\033[1m\033[36m"
 #define BOLDWHITE "\033[1m\033[37m"
 
+#include <SDL3/SDL.h>
 #include <stdio.h>
 
 #define LOG_MESSAGE( msg, ... )                                                \
@@ -40,6 +41,12 @@
   do {                                                                         \
     fprintf( stderr, "%s%s:%d:%s ", RED, __FILE__, __LINE__, COLOR_RESET );    \
     perror( msg );                                                             \
+  } while ( 0 )
+
+#define LOG_SDL_ERROR( msg )                                                   \
+  do {                                                                         \
+    fprintf( stderr, "%s%s:%d:%s %s: \n", RED, __FILE__, __LINE__,             \
+             COLOR_RESET, SDL_GetError() );                                    \
   } while ( 0 )
 
 #endif // __MIM_LOGGING_H__

@@ -7,8 +7,12 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-void handle_key_down( SDL_KeyboardEvent keyboard_event ) {
+void handle_key_down( SDL_KeyboardEvent keyboard_event, Editor* editor ) {
   printf( "%c was pressed\n", keyboard_event.key );
+
+  if ( keyboard_event.key == SDLK_O ) {
+    Editor_open_file_picker( editor );
+  }
 }
 
 int main( int argc, char* argv[] ) {
@@ -47,6 +51,10 @@ int main( int argc, char* argv[] ) {
       .h = image->h,
   };
 
+  Editor editor;
+
+  Editor_init( &editor, window );
+
   bool quit = false;
   while ( !quit ) {
     SDL_Event event;
@@ -57,7 +65,7 @@ int main( int argc, char* argv[] ) {
         break;
 
       case SDL_EVENT_KEY_DOWN:
-        handle_key_down( event.key );
+        handle_key_down( event.key, &editor );
         break;
 
       default:
@@ -73,6 +81,8 @@ int main( int argc, char* argv[] ) {
   }
 
   printf( "Closing :(\n" );
+
+  Editor_free( &editor );
 
   SDL_DestroyTexture( texture );
   SDL_DestroySurface( image );
