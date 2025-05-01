@@ -31,12 +31,16 @@ typedef struct {
 
 void PieceTable_free( PieceTable* pt );
 int PieceTable_load_file( PieceTable* pt, char* filename );
-int PieceTable_insert( PieceTable* pt, int64_t pos, char* src );
+int PieceTable_insert( PieceTable* pt, int64_t global_pos, char* text );
+// returns position in add buffer, -1 if error
+int64_t PieceTable_append_to_add_buffer( PieceTable* pt, char* src,
+                                         size_t src_len );
+PT_Piece* PieceTable_find_piece_by_global_pos( PieceTable* pt, int64_t pos );
+int PieceTable_insert_piece( PieceTable* pt, PT_Piece* p );
 int PieceTable_output_final( PieceTable* pt );
 int PieceTable_read_piece( PieceTable* pt, PT_Piece* p, char* buf );
+void PieceTable_dump_piece( PieceTable* pt, PT_Piece* p );
 void PieceTable_dump_pieces( PieceTable* pt );
-PT_Piece* PieceTable_find_piece_by_global_pos( PieceTable* pt, int64_t pos );
-
-void PT_Piece_dump( PT_Piece* p );
+int PT_Piece_shift_pieces_behind( PT_Piece* p, int64_t shift );
 
 #endif //  __PIECE_TABLE_H__

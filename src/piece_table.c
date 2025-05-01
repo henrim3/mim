@@ -83,58 +83,32 @@ int PieceTable_load_file( PieceTable* pt, char* filename ) {
   return MIM_SUCCESS;
 }
 
-int PieceTable_insert( PieceTable* pt, int64_t pos, char* src ) {
-  LOG_MESSAGE( "inserting %s at %d", src, pos );
+int PieceTable_insert( PieceTable* pt, int64_t global_pos, char* text ) {
+  LOG_MESSAGE( "inserting %s at %d", text, global_pos );
 
   // check valid position
-  if ( pos < 0 || pos > pt->total_length ) {
+  if ( global_pos < 0 || global_pos > pt->total_length ) {
     LOG_ERROR( "tried to insert at invalid position: %d, should be >= 0, <= %d",
-               pos, pt->total_length );
+               global_pos, pt->total_length );
     return MIM_FAILURE;
   }
 
-  size_t src_len = strlen( src );
+  size_t src_len = strlen( text );
 
   PT_Piece* new_piece = malloc( sizeof( PT_Piece ) );
   if ( new_piece == NULL ) {
-    LOG_PERROR( "malloc() error while allocating src piece" );
+    LOG_PERROR( "malloc() error while allocating new piece" );
   }
 
-  new_piece->global_pos = pos;
+  new_piece->global_pos = global_pos;
   new_piece->length = src_len;
   new_piece->src_buf = PT_ADD_BUFFER;
 
-  // grow add buffer if necessary
-  int64_t new_length = pt->add_buffer_length + src_len;
-
-  if ( pt->add_buffer_size == 0 ) {
-    assert( pt->add_buffer_length == 0 &&
-            "add buffer length should be 0 if add buffer size is 0" );
-    pt->add_buffer = malloc( INITIAL_ADD_BUFFER_SIZE * sizeof( char ) );
-
-    if ( pt->add_buffer == NULL ) {
-      LOG_PERROR( "malloc() during initial alloc for add buffer" );
-      return MIM_FAILURE;
-    }
-
-    pt->add_buffer_size = INITIAL_ADD_BUFFER_SIZE;
+  new_piece->buf_pos = PieceTable_append_to_add_buffer( pt, text, src_len );
+  if ( new_piece->buf_pos == -1 ) {
+    LOG_ERROR( "error appending to add buffer" );
+    return MIM_FAILURE;
   }
-
-  // note: +1 because null terminator
-  while ( pt->add_buffer_size < new_length + 1 ) {
-    pt->add_buffer_size *= 2;
-    pt->add_buffer =
-        realloc( pt->add_buffer, pt->add_buffer_size * sizeof( char ) );
-
-    if ( pt->add_buffer == NULL ) {
-      LOG_PERROR( "realloc() while growing add buffer" );
-      return MIM_FAILURE;
-    }
-  }
-
-  // add text to end of add buffer
-  strcpy( pt->add_buffer + pt->add_buffer_length, src );
-  assert( pt->add_buffer[new_length] == '\0' );
 
   // put as head if first piece
   if ( pt->pieces_head == NULL ) {
@@ -149,17 +123,30 @@ int PieceTable_insert( PieceTable* pt, int64_t pos, char* src ) {
             "pieces length should be 0 if head is null" );
     pt->pieces_length = 1;
     pt->total_length += src_len;
-    pt->add_buffer_length = new_length;
 
     return MIM_SUCCESS;
   }
 
-  // TODO: put as head if pos 0
-  if ( pos == 0 ) {
+  // put in front of head
+  if ( global_pos == 0 ) {
+    pt->pieces_head->prev = new_piece;
+
+    new_piece->next = pt->pieces_head;
+    new_piece->prev = NULL;
+
+    pt->pieces_head = new_piece;
+
+    if ( PT_Piece_shift_pieces_behind( new_piece, new_piece->length ) ==
+         MIM_FAILURE ) {
+      LOG_ERROR( "error while shifting pieces back" );
+      return MIM_FAILURE;
+    }
+
+    return MIM_SUCCESS;
   }
 
   // put as tail if goes after current tail
-  if ( pos == pt->total_length ) {
+  if ( global_pos == pt->total_length ) {
     assert( pt->pieces_tail != NULL && "pieces tail should be null" );
     new_piece->buf_pos = pt->add_buffer_length;
     pt->pieces_tail->next = new_piece;
@@ -169,16 +156,38 @@ int PieceTable_insert( PieceTable* pt, int64_t pos, char* src ) {
 
     pt->pieces_length++;
     pt->total_length += src_len;
-    pt->add_buffer_length = new_length;
 
     return MIM_SUCCESS;
   }
 
   // find piece to insert at
-  PT_Piece* insert_piece = PieceTable_find_piece_by_global_pos( pt, pos );
+  PT_Piece* insert_piece =
+      PieceTable_find_piece_by_global_pos( pt, global_pos );
   if ( insert_piece == NULL ) {
     LOG_ERROR( "couldn't find piece to insert at" );
     return MIM_FAILURE;
+  }
+
+  // check if inserting at gap between pieces
+  if ( insert_piece->global_pos == global_pos ) {
+    LOG_MESSAGE( "HERE" );
+    if ( insert_piece->prev != NULL ) {
+      insert_piece->prev->next = new_piece;
+    }
+
+    new_piece->prev = insert_piece->prev;
+    new_piece->next = insert_piece;
+
+    insert_piece->next = new_piece;
+    insert_piece->global_pos += src_len;
+
+    if ( PT_Piece_shift_pieces_behind( new_piece, new_piece->length ) ==
+         MIM_FAILURE ) {
+      LOG_ERROR( "error while shifting pieces back" );
+      return MIM_FAILURE;
+    }
+
+    return MIM_SUCCESS;
   }
 
   PT_Piece* second_half_piece = malloc( sizeof( PT_Piece ) );
@@ -198,7 +207,7 @@ int PieceTable_insert( PieceTable* pt, int64_t pos, char* src ) {
   new_piece->next = second_half_piece;
 
   int64_t original_insert_piece_length = insert_piece->length;
-  insert_piece->length = pos - insert_piece->global_pos;
+  insert_piece->length = global_pos - insert_piece->global_pos;
   second_half_piece->buf_pos = insert_piece->buf_pos + insert_piece->length;
   second_half_piece->length =
       original_insert_piece_length - insert_piece->length;
@@ -209,7 +218,80 @@ int PieceTable_insert( PieceTable* pt, int64_t pos, char* src ) {
 
   pt->pieces_length++;
   pt->total_length += src_len;
+
+  if ( PT_Piece_shift_pieces_behind( new_piece, new_piece->length ) ==
+       MIM_FAILURE ) {
+    LOG_ERROR( "error while shifting pieces back" );
+    return MIM_FAILURE;
+  }
+
+  return MIM_SUCCESS;
+}
+
+int64_t PieceTable_append_to_add_buffer( PieceTable* pt, char* src,
+                                         size_t src_len ) {
+  // grow add buffer if necessary
+  int64_t new_length = pt->add_buffer_length + src_len;
+
+  if ( pt->add_buffer_size == 0 ) {
+    assert( pt->add_buffer_length == 0 &&
+            "add buffer length should be 0 if add buffer size is 0" );
+    pt->add_buffer = malloc( INITIAL_ADD_BUFFER_SIZE * sizeof( char ) );
+
+    if ( pt->add_buffer == NULL ) {
+      LOG_PERROR( "malloc() during initial alloc for add buffer" );
+      return -1;
+    }
+
+    pt->add_buffer_size = INITIAL_ADD_BUFFER_SIZE;
+  }
+
+  // note: +1 because null terminator
+  while ( pt->add_buffer_size < new_length + 1 ) {
+    pt->add_buffer_size *= 2;
+    pt->add_buffer =
+        realloc( pt->add_buffer, pt->add_buffer_size * sizeof( char ) );
+
+    if ( pt->add_buffer == NULL ) {
+      LOG_PERROR( "realloc() while growing add buffer" );
+      return -1;
+    }
+  }
+
+  // add text to end of add buffer
+  strcpy( pt->add_buffer + pt->add_buffer_length, src );
+  assert( pt->add_buffer[new_length] == '\0' &&
+          "strcpy should put null terminator" );
+
+  int64_t old_length = pt->add_buffer_length;
   pt->add_buffer_length = new_length;
+
+  return old_length;
+}
+
+PT_Piece* PieceTable_find_piece_by_global_pos( PieceTable* pt, int64_t pos ) {
+  if ( pos < 0 || pos > pt->total_length ) {
+    LOG_ERROR(
+        "tried to find piece at invalid position: %d, should be >= 0, <= %d",
+        pos, pt->total_length );
+    return NULL;
+  }
+
+  if ( pt->pieces_head == NULL ) {
+    LOG_ERROR( "tried to find piece but pieces head is null" );
+    return NULL;
+  }
+
+  PT_Piece* curr = pt->pieces_head;
+  while ( pos > curr->global_pos + curr->length ) {
+    curr = curr->next;
+    if ( curr == NULL ) {
+      LOG_ERROR( "couldn't find piece for pos: %d", pos );
+      return NULL;
+    }
+  }
+
+  return curr;
 }
 
 int PieceTable_output_final( PieceTable* pt ) {
@@ -259,42 +341,7 @@ int PieceTable_read_piece( PieceTable* pt, PT_Piece* p, char* buf ) {
   return MIM_SUCCESS;
 }
 
-PT_Piece* PieceTable_find_piece_by_global_pos( PieceTable* pt, int64_t pos ) {
-  if ( pos < 0 || pos > pt->total_length ) {
-    LOG_ERROR(
-        "tried to find piece at invalid position: %d, should be >= 0, <= %d",
-        pos, pt->total_length );
-    return NULL;
-  }
-
-  if ( pt->pieces_head == NULL ) {
-    LOG_ERROR( "tried to find piece but pieces head is null" );
-    return NULL;
-  }
-
-  PT_Piece* curr = pt->pieces_head;
-  while ( pos > curr->global_pos + curr->length ) {
-    curr = curr->next;
-    if ( curr == NULL ) {
-      LOG_ERROR( "couldn't find piece for pos: %d", pos );
-      return NULL;
-    }
-  }
-
-  return curr;
-}
-
-void PieceTable_dump_pieces( PieceTable* pt ) {
-  PT_Piece* curr = pt->pieces_head;
-
-  while ( curr != NULL ) {
-    PT_Piece_dump( curr );
-    printf( "\n" );
-    curr = curr->next;
-  }
-}
-
-void PT_Piece_dump( PT_Piece* p ) {
+void PieceTable_dump_piece( PieceTable* pt, PT_Piece* p ) {
   printf( "Piece at %p:\n", p );
   printf( "  global_pos: %" PRId64 "\n", p->global_pos );
   printf( "  buf_pos: %" PRId64 "\n", p->buf_pos );
@@ -306,6 +353,39 @@ void PT_Piece_dump( PT_Piece* p ) {
   } else {
     printf( "  src_buf: invalid\n" );
   }
+  char* buf = malloc( p->length * sizeof( char ) );
+  if ( PieceTable_read_piece( pt, p, buf ) == MIM_SUCCESS ) {
+    printf( "  text: %s\n", buf );
+  } else {
+    printf( "  text: invalid\n" );
+  }
+  free( buf );
   printf( "  prev: %p\n", p->prev );
   printf( "  next: %p\n", p->next );
+}
+
+void PieceTable_dump_pieces( PieceTable* pt ) {
+  PT_Piece* curr = pt->pieces_head;
+
+  while ( curr != NULL ) {
+    PieceTable_dump_piece( pt, curr );
+    printf( "\n" );
+    curr = curr->next;
+  }
+}
+
+int PT_Piece_shift_pieces_behind( PT_Piece* p, int64_t shift ) {
+  if ( p == NULL ) {
+    LOG_ERROR( "tried to shift after null piece" );
+    return MIM_FAILURE;
+  }
+
+  PT_Piece* curr = p->next;
+
+  while ( curr != NULL ) {
+    curr->global_pos += shift;
+    curr = curr->next;
+  }
+
+  return MIM_SUCCESS;
 }
