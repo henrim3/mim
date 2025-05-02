@@ -22,6 +22,13 @@
 #include <SDL3/SDL.h>
 #include <stdio.h>
 
+#define LOG_IMPORTANT( msg, ... )                                              \
+  do {                                                                         \
+    printf( "%s%s:%d: ", BOLDCYAN, __FILE__, __LINE__ );                       \
+    printf( msg, ##__VA_ARGS__ );                                              \
+    printf( "%s\n", COLOR_RESET );                                             \
+  } while ( 0 )
+
 #define LOG_MESSAGE( msg, ... )                                                \
   do {                                                                         \
     printf( "%s%s:%d:%s ", YELLOW, __FILE__, __LINE__, COLOR_RESET );          \

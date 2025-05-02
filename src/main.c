@@ -7,89 +7,108 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
-void handle_key_down( SDL_KeyboardEvent keyboard_event, Editor* editor ) {
-  printf( "%c was pressed\n", keyboard_event.key );
-
-  if ( keyboard_event.key == SDLK_O ) {
-    Editor_open_file_picker( editor );
-  }
+int main() {
+  PieceTable* pt = PieceTable_new();
+  PieceTable_load_file( pt, "test.txt" );
+  PieceTable_insert_char( pt, 'M', 6 );
+  PieceTable_insert_char( pt, 'D', 7 );
+  PieceTable_insert_char( pt, 'I', 7 );
+  PieceTable_dump( pt );
+  PieceTable_dump_pieces( pt );
+  PieceTable_free( pt );
 }
 
-int main( int argc, char* argv[] ) {
-  printf( "Started mim!\n" );
+// void handle_key_down( SDL_KeyboardEvent keyboard_event, Editor* editor ) {
+//   printf( "%c was pressed\n", keyboard_event.key );
 
-  SDL_Window* window = NULL;
-  SDL_Renderer* renderer = NULL;
-  SDL_Surface* screenSurface = NULL;
+//   if ( keyboard_event.key == SDLK_O ) {
+//     Editor_open_file_picker( editor );
+//   }
+// }
 
-  if ( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
-    LOG_ERROR( "couldn't initialize SDL: %s\n", SDL_GetError() );
-    return 1;
-  }
+// void display_char( SDL_Renderer* renderer, SDL_Texture* texture, char c, int
+// x,
+//                    int y, int w, int h ) {
+//   SDL_FRect char_rect = {
+//       .x = 0,
+//       .y = 0,
+//       .w = 6,
+//       .h = 6,
+//   };
+//   SDL_FRect dest_rect = {
+//       .x = x,
+//       .y = y,
+//       .w = w,
+//       .h = h,
+//   };
+//   SDL_RenderTexture( renderer, texture, &char_rect, &dest_rect );
+// }
 
-  SDL_WindowFlags windowFlags = SDL_WINDOW_RESIZABLE;
+// int main( int argc, char* argv[] ) {
+//   printf( "Started mim!\n" );
 
-  if ( SDL_CreateWindowAndRenderer( "mim", SCREEN_WIDTH, SCREEN_HEIGHT,
-                                    windowFlags, &window, &renderer ) < 0 ) {
-    LOG_ERROR( "couldn't create SDL window and renderer: %s\n ",
-               SDL_GetError() );
-    return 1;
-  }
+//   SDL_Window* window = NULL;
+//   SDL_Renderer* renderer = NULL;
+//   SDL_Surface* screenSurface = NULL;
 
-  if ( SDL_ShowWindow( window ) < 0 ) {
-    LOG_ERROR( "couldn't show SDL window: %s\n", SDL_GetError() );
-    return 1;
-  }
+//   if ( SDL_Init( SDL_INIT_VIDEO ) < 0 ) {
+//     LOG_ERROR( "couldn't initialize SDL: %s\n", SDL_GetError() );
+//     return 1;
+//   }
 
-  SDL_Surface* image = SDL_LoadBMP( "../fonts/round_6x6.bmp" );
-  SDL_Texture* texture = SDL_CreateTextureFromSurface( renderer, image );
+//   SDL_WindowFlags windowFlags = SDL_WINDOW_RESIZABLE;
 
-  SDL_FRect image_rect = {
-      .x = 0,
-      .y = 0,
-      .w = image->w,
-      .h = image->h,
-  };
+//   if ( SDL_CreateWindowAndRenderer( "mim", SCREEN_WIDTH, SCREEN_HEIGHT,
+//                                     windowFlags, &window, &renderer ) < 0 ) {
+//     LOG_ERROR( "couldn't create SDL window and renderer: %s\n ",
+//                SDL_GetError() );
+//     return 1;
+//   }
 
-  Editor editor;
+//   if ( SDL_ShowWindow( window ) < 0 ) {
+//     LOG_ERROR( "couldn't show SDL window: %s\n", SDL_GetError() );
+//     return 1;
+//   }
 
-  Editor_init( &editor, window );
+//   SDL_Surface* image = SDL_LoadBMP( "../fonts/round_6x6.bmp" );
+//   SDL_Texture* texture = SDL_CreateTextureFromSurface( renderer, image );
 
-  bool quit = false;
-  while ( !quit ) {
-    SDL_Event event;
-    while ( SDL_PollEvent( &event ) ) {
-      switch ( event.type ) {
-      case SDL_EVENT_QUIT:
-        quit = true;
-        break;
+//   Editor* editor = Editor_new( window );
 
-      case SDL_EVENT_KEY_DOWN:
-        handle_key_down( event.key, &editor );
-        break;
+//   bool quit = false;
+//   while ( !quit ) {
+//     SDL_Event event;
+//     while ( SDL_PollEvent( &event ) ) {
+//       switch ( event.type ) {
+//       case SDL_EVENT_QUIT:
+//         quit = true;
+//         break;
 
-      default:
-      }
+//       case SDL_EVENT_KEY_DOWN:
+//         handle_key_down( event.key, editor );
+//         break;
 
-      if ( quit ) {
-        break;
-      }
-    }
+//       default:
+//       }
 
-    SDL_RenderTexture( renderer, texture, &image_rect, &image_rect );
-    SDL_RenderPresent( renderer );
-  }
+//       if ( quit ) {
+//         break;
+//       }
+//     }
 
-  printf( "Closing :(\n" );
+//     SDL_RenderPresent( renderer );
+//   }
 
-  Editor_free( &editor );
+//   printf( "Closing :(\n" );
 
-  SDL_DestroyTexture( texture );
-  SDL_DestroySurface( image );
+//   Editor_free( editor );
 
-  SDL_DestroyWindow( window );
-  SDL_DestroyRenderer( renderer );
-  SDL_Quit();
+//   SDL_DestroyTexture( texture );
+//   SDL_DestroySurface( image );
 
-  return 0;
-}
+//   SDL_DestroyWindow( window );
+//   SDL_DestroyRenderer( renderer );
+//   SDL_Quit();
+
+//   return 0;
+// }

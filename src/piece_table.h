@@ -24,24 +24,34 @@ typedef struct {
   int64_t add_buffer_size;
   int64_t add_buffer_length;
   int64_t total_length;
+  int64_t global_pos_after_last; // last pos inserted char at
+  PT_Piece* last_modified_piece;
   PT_Piece* pieces_head;
   PT_Piece* pieces_tail;
-  size_t pieces_length;
 } PieceTable;
 
-int PieceTable_init( PieceTable* pt );
+PieceTable* PieceTable_new();
 void PieceTable_free( PieceTable* pt );
+
 int PieceTable_load_file( PieceTable* pt, const char* file_name );
-int PieceTable_insert( PieceTable* pt, char* text, int64_t global_pos );
-//
+int PieceTable_insert_str( PieceTable* pt, char* text, int64_t global_pos );
+int PieceTable_insert_char( PieceTable* pt, char c, int64_t global_pos );
+
+int PieceTable_append_char_to_add_buffer( PieceTable* pt, char c );
 // returns position in add buffer, -1 if error
 int64_t PieceTable_append_to_add_buffer( PieceTable* pt, char* src,
                                          size_t src_len );
-PT_Piece* PieceTable_find_piece_by_global_pos( PieceTable* pt, int64_t pos );
-int PieceTable_output_final( PieceTable* pt );
+PT_Piece* PieceTable_find_piece_by_global_pos( PieceTable* pt,
+                                               int64_t global_pos );
+
 int PieceTable_read_piece( PieceTable* pt, PT_Piece* p, char* buf );
+int PieceTable_output_final( PieceTable* pt );
+void PieceTable_dump( PieceTable* pt );
 void PieceTable_dump_piece( PieceTable* pt, PT_Piece* p );
 void PieceTable_dump_pieces( PieceTable* pt );
-int PT_Piece_shift_pieces_behind( PT_Piece* p, int64_t shift );
+
+PT_Piece* PT_Piece_new();
+int PT_Piece_shift_pieces_after( PT_Piece* p, int64_t shift );
+int PT_Piece_global_pos_in_piece( PT_Piece* p, int64_t global_pos );
 
 #endif //  __PIECE_TABLE_H__

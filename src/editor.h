@@ -10,7 +10,7 @@ typedef struct {
   PieceTable* piece_table;
 } Editor;
 
-int Editor_init( Editor* editor, SDL_Window* window );
+Editor* Editor_new( SDL_Window* window );
 void Editor_free( Editor* editor );
 void Editor_open_file_picker( Editor* editor );
 
