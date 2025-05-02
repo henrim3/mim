@@ -558,6 +558,7 @@ void PieceTable_dump_piece( PieceTable* pt, PT_Piece* p ) {
   printf( "  global_pos: %" PRId64 "\n", p->global_pos );
   printf( "  buf_pos: %" PRId64 "\n", p->buf_pos );
   printf( "  length: %" PRId64 "\n", p->length );
+
   if ( p->src_buf == PT_ORIGINAL_BUFFER ) {
     printf( "  src_buf: PT_ORIGINAL_BUFFER\n" );
   } else if ( p->src_buf == PT_ADD_BUFFER ) {
@@ -565,6 +566,7 @@ void PieceTable_dump_piece( PieceTable* pt, PT_Piece* p ) {
   } else {
     printf( "  src_buf: invalid\n" );
   }
+
   char* buf = malloc( p->length * sizeof( char ) );
   if ( PieceTable_read_piece( pt, p, buf ) == MIM_SUCCESS ) {
     printf( "  text: %s\n", buf );
@@ -572,6 +574,7 @@ void PieceTable_dump_piece( PieceTable* pt, PT_Piece* p ) {
     printf( "  text: invalid\n" );
   }
   free( buf );
+
   if ( p->prev == NULL ) {
     printf( "  prev: NULL\n" );
   } else {
