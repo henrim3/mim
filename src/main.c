@@ -14,6 +14,9 @@ int main() {
   PieceTable_insert_char( pt, 'D', 7 );
   PieceTable_insert_char( pt, 'I', 7 );
   PieceTable_insert_char( pt, 'Z', 0 );
+  PieceTable_insert_char( pt, 'X', 1 );
+  PieceTable_insert_char( pt, 'Y', 1 );
+  PieceTable_insert_char( pt, '5', 14 );
   PieceTable_dump( pt );
   PieceTable_dump_pieces( pt );
   PieceTable_free( pt );

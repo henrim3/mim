@@ -204,10 +204,6 @@ int PieceTable_insert_char( PieceTable* pt, char c, int64_t global_pos ) {
       pt->pieces_head = new_piece;
     }
 
-    if ( insert_at == pt->pieces_tail ) {
-      pt->pieces_tail = new_piece;
-    }
-
     // move all pieces after new piece back
     if ( PT_Piece_shift_pieces_after( new_piece, 1 ) == MIM_FAILURE ) {
       LOG_ERROR( "couldn't shift pieces back" );
@@ -242,6 +238,10 @@ int PieceTable_insert_char( PieceTable* pt, char c, int64_t global_pos ) {
     insert_at->next->prev = second_half;
   }
   insert_at->next = new_piece;
+
+  if ( insert_at == pt->pieces_tail ) {
+    pt->pieces_tail = second_half;
+  }
 
   // adjust lengths
   second_half->length = insert_at->length - global_pos_diff;
