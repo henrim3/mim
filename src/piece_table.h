@@ -24,8 +24,8 @@ typedef struct {
   int64_t add_buffer_size;
   int64_t add_buffer_length;
   int64_t total_length;
-  int64_t global_pos_after_last; // last pos inserted char at
-  PT_Piece* last_modified_piece;
+  int64_t cursor_global_pos; // one after last inserted at pos
+  PT_Piece* cursor_piece;    // last piece modified
   PT_Piece* pieces_head;
   PT_Piece* pieces_tail;
 } PieceTable;

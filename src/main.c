@@ -13,6 +13,7 @@ int main() {
   PieceTable_insert_char( pt, 'M', 6 );
   PieceTable_insert_char( pt, 'D', 7 );
   PieceTable_insert_char( pt, 'I', 7 );
+  PieceTable_insert_char( pt, 'Z', 0 );
   PieceTable_dump( pt );
   PieceTable_dump_pieces( pt );
   PieceTable_free( pt );

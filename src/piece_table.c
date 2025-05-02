@@ -18,7 +18,7 @@ PieceTable* PieceTable_new() {
     LOG_ERROR( "calloc() while allocating new piece table" );
     return NULL;
   }
-  pt->global_pos_after_last = -1;
+  pt->cursor_global_pos = -1;
   return pt;
 }
 
@@ -89,6 +89,171 @@ int PieceTable_load_file( PieceTable* pt, const char* file_name ) {
 
   pt->pieces_tail = head;
 
+  return MIM_SUCCESS;
+}
+
+int PieceTable_insert_char( PieceTable* pt, char c, int64_t global_pos ) {
+  // keep a "cursor" of current inserting to avoid keep making pieces
+  // then you can move the cursor when the user moves their cursor as well
+  // but for now check if the global_pos is at the current cursor or else move
+  // the cursor
+
+  if ( global_pos < 0 || global_pos > pt->total_length ) {
+    LOG_ERROR(
+        "tried to insert at invalid position: %d, should be >= 0 and < %d",
+        global_pos, pt->total_length );
+    return MIM_FAILURE;
+  }
+
+  int64_t buf_pos = pt->add_buffer_length;
+  if ( PieceTable_append_char_to_add_buffer( pt, c ) == MIM_FAILURE ) {
+    LOG_ERROR( "error while appending char to add buffer" );
+    return MIM_FAILURE;
+  }
+
+  // check if pieces is empty (no file loaded)
+  if ( pt->pieces_head == NULL ) {
+    LOG_MESSAGE( "no pieces head, creating first piece" );
+    assert( pt->pieces_tail == NULL && "tail should be null if head is null" );
+
+    PT_Piece* new_head = PT_Piece_new();
+    if ( new_head == NULL ) {
+      LOG_ERROR( "error while creating first piece" );
+      return MIM_FAILURE;
+    }
+
+    // both head and tail since first piece
+    pt->pieces_head = new_head;
+    pt->pieces_tail = new_head;
+
+    new_head->global_pos = global_pos;
+    new_head->buf_pos = 0;
+    new_head->length = 1;
+    new_head->src_buf = PT_ADD_BUFFER;
+
+    // save pos and piece for next time
+    pt->cursor_piece = new_head;
+    pt->cursor_global_pos = 1;
+    pt->total_length++;
+
+    return MIM_SUCCESS;
+  }
+
+  // see if modifying at same place as last time
+  if ( global_pos == pt->cursor_global_pos ) {
+    LOG_MESSAGE( "inserting after last" );
+
+    pt->cursor_piece->length++;
+    pt->cursor_global_pos++;
+    pt->total_length++;
+
+    PT_Piece_shift_pieces_after( pt->cursor_piece, 1 );
+
+    return MIM_SUCCESS;
+  }
+
+  // move "cursor"
+  pt->cursor_global_pos = global_pos + 1;
+
+  PT_Piece* insert_at;
+
+  // see if modifying in same piece
+  if ( pt->cursor_piece != NULL &&
+       PT_Piece_global_pos_in_piece( pt->cursor_piece, global_pos ) ) {
+    LOG_MESSAGE( "inserting in same piece as last time" );
+    insert_at = pt->cursor_piece;
+  } else {
+    // look for piece
+    LOG_MESSAGE( "looking for piece for global pos: %d", global_pos );
+    insert_at = PieceTable_find_piece_by_global_pos( pt, global_pos );
+    if ( insert_at == NULL ) {
+      LOG_ERROR( "error while finding piece to insert at" );
+      return MIM_FAILURE;
+    }
+  }
+
+  PT_Piece* new_piece = PT_Piece_new();
+  if ( new_piece == NULL ) {
+    LOG_ERROR( "couldn't create new piece" );
+    return MIM_FAILURE;
+  }
+
+  new_piece->global_pos = global_pos;
+  new_piece->buf_pos = buf_pos;
+  new_piece->length = 1;
+  new_piece->src_buf = PT_ADD_BUFFER;
+
+  pt->cursor_piece = new_piece;
+
+  // still need to set prev and next
+
+  // check if inserting between pieces (inserting at start of a piece)
+  if ( global_pos == insert_at->global_pos ) {
+    LOG_MESSAGE( "inserting between two pieces" );
+
+    if ( insert_at->prev != NULL ) {
+      insert_at->prev->next = new_piece;
+    }
+
+    new_piece->prev = insert_at->prev;
+    new_piece->next = insert_at;
+
+    insert_at->prev = new_piece;
+
+    if ( insert_at == pt->pieces_head ) {
+      pt->pieces_head = new_piece;
+    }
+
+    if ( insert_at == pt->pieces_tail ) {
+      pt->pieces_tail = new_piece;
+    }
+
+    // move all pieces after new piece back
+    if ( PT_Piece_shift_pieces_after( new_piece, 1 ) == MIM_FAILURE ) {
+      LOG_ERROR( "couldn't shift pieces back" );
+      return MIM_FAILURE;
+    }
+
+    pt->total_length++;
+
+    return MIM_SUCCESS;
+  }
+  // need to split a piece
+  PT_Piece* second_half = PT_Piece_new();
+  if ( second_half == NULL ) {
+    LOG_ERROR( "couldn't create second half piece" );
+    return MIM_FAILURE;
+  }
+
+  int64_t global_pos_diff = global_pos - insert_at->global_pos;
+
+  second_half->global_pos = global_pos + 1;
+  second_half->buf_pos = insert_at->buf_pos + global_pos_diff;
+  second_half->src_buf = insert_at->src_buf;
+
+  // set prev, next
+  new_piece->prev = insert_at;
+  new_piece->next = second_half;
+
+  second_half->next = insert_at->next;
+  second_half->prev = new_piece;
+
+  if ( insert_at->next != NULL ) {
+    insert_at->next->prev = second_half;
+  }
+  insert_at->next = new_piece;
+
+  // adjust lengths
+  second_half->length = insert_at->length - global_pos_diff;
+  insert_at->length = global_pos_diff;
+
+  // move pieces after second half back
+  if ( PT_Piece_shift_pieces_after( second_half, 1 ) == MIM_FAILURE ) {
+    LOG_ERROR( "couldn't shift pieces back" );
+    return MIM_FAILURE;
+  }
+
+  pt->total_length++;
   return MIM_SUCCESS;
 }
 
@@ -231,163 +396,6 @@ int PieceTable_insert_str( PieceTable* pt, char* text, int64_t global_pos ) {
     return MIM_FAILURE;
   }
 
-  return MIM_SUCCESS;
-}
-
-int PieceTable_insert_char( PieceTable* pt, char c, int64_t global_pos ) {
-  // keep a "cursor" of current inserting to avoid keep making pieces
-  // then you can move the cursor when the user moves their cursor as well
-  // but for now check if the global_pos is at the current cursor or else move
-  // the cursor
-
-  if ( global_pos < 0 || global_pos > pt->total_length ) {
-    LOG_ERROR(
-        "tried to insert at invalid position: %d, should be >= 0 and < %d",
-        global_pos, pt->total_length );
-    return MIM_FAILURE;
-  }
-
-  int64_t buf_pos = pt->add_buffer_length;
-  if ( PieceTable_append_char_to_add_buffer( pt, c ) == MIM_FAILURE ) {
-    LOG_ERROR( "error while appending char to add buffer" );
-    return MIM_FAILURE;
-  }
-
-  // check if pieces is empty (no file loaded)
-  if ( pt->pieces_head == NULL ) {
-    LOG_MESSAGE( "no pieces head, creating first piece" );
-    assert( pt->pieces_tail == NULL && "tail should be null if head is null" );
-
-    PT_Piece* new_head = PT_Piece_new();
-    if ( new_head == NULL ) {
-      LOG_ERROR( "error while creating first piece" );
-      return MIM_FAILURE;
-    }
-
-    // both head and tail since first piece
-    pt->pieces_head = new_head;
-    pt->pieces_tail = new_head;
-
-    new_head->global_pos = global_pos;
-    new_head->buf_pos = 0;
-    new_head->length = 1;
-    new_head->src_buf = PT_ADD_BUFFER;
-
-    // save pos and piece for next time
-    pt->last_modified_piece = new_head;
-    pt->global_pos_after_last = 1;
-    pt->total_length++;
-
-    return MIM_SUCCESS;
-  }
-
-  // see if modifying at same place as last time
-  if ( global_pos == pt->global_pos_after_last ) {
-    LOG_MESSAGE( "inserting after last" );
-
-    pt->last_modified_piece->length++;
-    pt->global_pos_after_last++;
-    pt->total_length++;
-
-    PT_Piece_shift_pieces_after( pt->last_modified_piece, 1 );
-
-    return MIM_SUCCESS;
-  }
-
-  // move "cursor"
-  pt->global_pos_after_last = global_pos + 1;
-
-  PT_Piece* insert_at;
-
-  // see if modifying in same piece
-  if ( pt->last_modified_piece != NULL &&
-       PT_Piece_global_pos_in_piece( pt->last_modified_piece, global_pos ) ) {
-    LOG_MESSAGE( "inserting in same piece as last time" );
-    insert_at = pt->last_modified_piece;
-  } else {
-    // look for piece
-    LOG_MESSAGE( "looking for piece for global pos: %d", global_pos );
-    insert_at = PieceTable_find_piece_by_global_pos( pt, global_pos );
-    if ( insert_at == NULL ) {
-      LOG_ERROR( "error while finding piece to insert at" );
-      return MIM_FAILURE;
-    }
-  }
-
-  PT_Piece* new_piece = PT_Piece_new();
-  if ( new_piece == NULL ) {
-    LOG_ERROR( "couldn't create new piece" );
-    return MIM_FAILURE;
-  }
-
-  new_piece->global_pos = global_pos;
-  new_piece->buf_pos = buf_pos;
-  new_piece->length = 1;
-  new_piece->src_buf = PT_ADD_BUFFER;
-
-  pt->last_modified_piece = new_piece;
-
-  // still need to set prev and next
-
-  // check if inserting between pieces (inserting at start of a piece)
-  if ( global_pos == insert_at->global_pos ) {
-    LOG_MESSAGE( "inserting between two pieces" );
-
-    if ( insert_at->prev != NULL ) {
-      insert_at->prev->next = new_piece;
-    }
-
-    new_piece->prev = insert_at->prev;
-    new_piece->next = insert_at;
-
-    insert_at->prev = new_piece;
-
-    // move all pieces after new piece back
-    if ( PT_Piece_shift_pieces_after( new_piece, 1 ) == MIM_FAILURE ) {
-      LOG_ERROR( "couldn't shift pieces back" );
-      return MIM_FAILURE;
-    }
-
-    pt->total_length++;
-
-    return MIM_SUCCESS;
-  }
-  // need to split a piece
-  PT_Piece* second_half = PT_Piece_new();
-  if ( second_half == NULL ) {
-    LOG_ERROR( "couldn't create second half piece" );
-    return MIM_FAILURE;
-  }
-
-  int64_t global_pos_diff = global_pos - insert_at->global_pos;
-
-  second_half->global_pos = global_pos + 1;
-  second_half->buf_pos = insert_at->buf_pos + global_pos_diff;
-  second_half->src_buf = insert_at->src_buf;
-
-  // set prev, next
-  new_piece->prev = insert_at;
-  new_piece->next = second_half;
-
-  second_half->next = insert_at->next;
-  second_half->prev = new_piece;
-
-  if ( insert_at->next != NULL ) {
-    insert_at->next->prev = second_half;
-  }
-  insert_at->next = new_piece;
-
-  // adjust lengths
-  second_half->length = insert_at->length - global_pos_diff;
-  insert_at->length = global_pos_diff;
-
-  // move pieces after second half back
-  if ( PT_Piece_shift_pieces_after( second_half, 1 ) == MIM_FAILURE ) {
-    LOG_ERROR( "couldn't shift pieces back" );
-    return MIM_FAILURE;
-  }
-
-  pt->total_length++;
   return MIM_SUCCESS;
 }
 
@@ -544,8 +552,8 @@ void PieceTable_dump( PieceTable* pt ) {
   printf( "  add_buffer_length: %d\n", pt->add_buffer_length );
   printf( "  add_buffer_size: %d\n", pt->add_buffer_size );
   printf( "  total_length: %d\n", pt->total_length );
-  printf( "  global_pos_after_last: %d\n", pt->global_pos_after_last );
-  printf( "  last_modified_piece: %p\n", pt->last_modified_piece );
+  printf( "  cursor_global_pos: %d\n", pt->cursor_global_pos );
+  printf( "  cursor_piece: %p\n", pt->cursor_piece );
   printf( "  pieces_head: %p\n", pt->pieces_head );
   printf( "  pieces_tail: %p\n", pt->pieces_tail );
   printf( "  final output: " );
