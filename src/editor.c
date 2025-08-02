@@ -1,15 +1,22 @@
 #include "editor.h"
 
-#include "common.h"
-#include "logging.h"
-#include "piece_table.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-Editor* Editor_new( SDL_Window* window ) {
+#include "common.h"
+#include "font.h"
+#include "logging.h"
+#include "piece_table.h"
+
+Editor* Editor_new( SDL_Window* window, SDL_Renderer* renderer,
+                    SDL_Surface* font_surface, int char_width,
+                    int char_height ) {
   Editor* editor = calloc( 1, sizeof( Editor ) );
 
   editor->window = window;
+  editor->renderer = renderer;
+
+  editor->font = Font_new( renderer, font_surface, char_width, char_height );
 
   editor->piece_table = PieceTable_new();
   if ( editor->piece_table == NULL ) {
@@ -21,7 +28,9 @@ Editor* Editor_new( SDL_Window* window ) {
 }
 
 void Editor_free( Editor* editor ) {
-  free( editor->piece_table );
+  PieceTable_free( editor->piece_table );
+  Font_free( editor->font );
+  free( editor );
 }
 
 static void SDLCALL open_file_callback( void* userdata,
@@ -46,4 +55,25 @@ void Editor_open_file_picker( Editor* editor ) {
   LOG_MESSAGE( "opening file" );
   SDL_ShowOpenFileDialog( open_file_callback, (void*)editor, editor->window,
                           NULL, 0, NULL, 0 );
+}
+
+void _display_char( SDL_Renderer* renderer, Font* font, char c, int x, int y,
+                    int w, int h ) {
+  SDL_FRect char_rect = {
+      .x = 0,
+      .y = 0,
+      .w = font->char_width,
+      .h = font->char_height,
+  };
+  SDL_FRect dest_rect = {
+      .x = x,
+      .y = y,
+      .w = w,
+      .h = h,
+  };
+  SDL_RenderTexture( renderer, font->texture, &char_rect, &dest_rect );
+}
+
+void Editor_render( Editor* editor ) {
+  _display_char( editor->renderer, editor->font, 'a', 10, 10, 5, 5 );
 }

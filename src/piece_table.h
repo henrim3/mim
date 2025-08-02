@@ -38,6 +38,7 @@ int PieceTable_insert_str( PieceTable* pt, char* text, int64_t global_pos );
 int PieceTable_insert_char( PieceTable* pt, char c, int64_t global_pos );
 
 int PieceTable_append_char_to_add_buffer( PieceTable* pt, char c );
+//
 // returns position in add buffer, -1 if error
 int64_t PieceTable_append_to_add_buffer( PieceTable* pt, char* src,
                                          size_t src_len );

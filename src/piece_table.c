@@ -33,6 +33,8 @@ void PieceTable_free( PieceTable* pt ) {
     free( curr );
     curr = next;
   }
+
+  free( pt );
 }
 
 int PieceTable_load_file( PieceTable* pt, const char* file_name ) {
