@@ -7,6 +7,7 @@
 #include "font.h"
 #include "logging.h"
 #include "piece_table.h"
+#include "vec.h"
 
 Editor* Editor_new( SDL_Window* window, SDL_Renderer* renderer,
                     SDL_Surface* font_surface, int char_width,
@@ -57,13 +58,15 @@ void Editor_open_file_picker( Editor* editor ) {
                           NULL, 0, NULL, 0 );
 }
 
-void _display_char( SDL_Renderer* renderer, Font* font, char c, int x, int y,
-                    int w, int h ) {
+void _Editor_display_char( Editor* editor, char c, int x, int y, int w,
+                           int h ) {
+  IntVec2 coords = Font_get_char_coords( editor->font, c );
+
   SDL_FRect char_rect = {
-      .x = 0,
-      .y = 0,
-      .w = font->char_width,
-      .h = font->char_height,
+      .x = coords.x,
+      .y = coords.y,
+      .w = editor->font->char_width,
+      .h = editor->font->char_height,
   };
   SDL_FRect dest_rect = {
       .x = x,
@@ -71,9 +74,20 @@ void _display_char( SDL_Renderer* renderer, Font* font, char c, int x, int y,
       .w = w,
       .h = h,
   };
-  SDL_RenderTexture( renderer, font->texture, &char_rect, &dest_rect );
+  SDL_RenderTexture( editor->renderer, editor->font->texture, &char_rect,
+                     &dest_rect );
+}
+
+void _Editor_display_line( Editor* editor, char* s ) {
+  int x = 0;
+  for ( char* ptr = s; *ptr != '\0'; ptr++ ) {
+    _Editor_display_char( editor, *ptr, x, 30, 30, 30 );
+    x += 30;
+  }
 }
 
 void Editor_render( Editor* editor ) {
-  _display_char( editor->renderer, editor->font, 'a', 10, 10, 5, 5 );
+  _Editor_display_line( editor,
+                        "The quick brown fox jumped over the lazy dog" );
+  // _Editor_display_char( editor, 'a', 5, 5, 20, 20 );
 }
